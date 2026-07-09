@@ -1,0 +1,136 @@
+{% extends 'checklist/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+
+        <!-- Progresso -->
+        <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">Indicador {{ indicador_numero }} de {{ total_indicadores }}</small>
+                <small class="text-muted">{{ indicador_numero }}/{{ total_indicadores }}</small>
+            </div>
+            <div class="progress" style="height: 8px;">
+                <div class="progress-bar" style="width: {% widthratio indicador_numero total_indicadores 100 %}%; background-color: #003366;"></div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <h5 class="fw-bold mb-4" style="color: #003366;">
+                {{ indicador.numero }}. {{ indicador.nome }}
+            </h5>
+
+            <form method="post">
+                {% csrf_token %}
+                {% for item in perguntas_numeradas %}
+
+                {% if item.pergunta.pergunta_mae %}
+                <div class="mb-4 pb-3 border-bottom pergunta-bloco"
+                     id="pergunta-bloco-{{ item.pergunta.pk }}"
+                     data-mae="{{ item.pergunta.pergunta_mae.pk }}"
+                     style="display:none;">
+                {% else %}
+                <div class="mb-4 pb-3 border-bottom pergunta-bloco"
+                     id="pergunta-bloco-{{ item.pergunta.pk }}">
+                {% endif %}
+
+                    <p class="mb-2">
+                        {% if item.pergunta.pergunta_mae %}
+                            <span class="text-muted">↳</span>
+                        {% endif %}
+                        <strong>{{ item.numero }}.</strong> {{ item.pergunta.texto }}
+                    </p>
+                    {% if item.pergunta.referencia_nbr %}
+                        <small class="text-muted d-block mb-2">📋 {{ item.pergunta.referencia_nbr }}</small>
+                    {% endif %}
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   name="pergunta_{{ item.pergunta.pk }}"
+                                   id="sim_{{ item.pergunta.pk }}"
+                                   value="sim"
+                                   {% if not item.pergunta.pergunta_mae %}required{% endif %}>
+                            <label class="form-check-label text-success fw-bold" for="sim_{{ item.pergunta.pk }}">
+                                ✅ Sim
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   name="pergunta_{{ item.pergunta.pk }}"
+                                   id="nao_{{ item.pergunta.pk }}"
+                                   value="nao"
+                                   {% if not item.pergunta.pergunta_mae %}required{% endif %}>
+                            <label class="form-check-label text-danger fw-bold" for="nao_{{ item.pergunta.pk }}">
+                                ❌ Não
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="d-flex justify-content-between mt-3">
+                    {% if indicador_numero > 1 %}
+                        <a href="{% url 'questionario' avaliacao.id indicador_numero|add:'-1' %}"
+                           class="btn btn-outline-secondary">← Anterior</a>
+                    {% else %}
+                        <div></div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary">
+                        {% if indicador_numero == total_indicadores %}
+                            Ver Resultado →
+                        {% else %}
+                            Próximo →
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de início de indicador -->
+<div class="modal fade" id="modalIndicador" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <div class="modal-body">
+                <div style="font-size: 3rem;">📋</div>
+                <h5 class="fw-bold mt-3" style="color: #003366;">Atenção!</h5>
+                <p class="text-muted mb-1">Iniciaremos a análise da área:</p>
+                <h4 class="fw-bold">{{ indicador.numero }}. {{ indicador.nome }}</h4>
+                <p class="text-muted mt-2 small">Responda todas as perguntas antes de avançar.</p>
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+                <button type="button" class="btn btn-primary px-5" data-bs-dismiss="modal">
+                    Entendido, vamos começar!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var modal = new bootstrap.Modal(document.getElementById('modalIndicador'));
+    modal.show();
+
+    document.querySelectorAll('input[type="radio"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            const pk = this.name.replace('pergunta_', '');
+            const valor = this.value;
+
+            document.querySelectorAll('[data-mae="' + pk + '"]').forEach(function (bloco) {
+                if (valor === 'sim') {
+                    bloco.style.display = 'block';
+                } else {
+                    bloco.style.display = 'none';
+                    bloco.querySelectorAll('input[type="radio"]').forEach(function (r) {
+                        r.checked = false;
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

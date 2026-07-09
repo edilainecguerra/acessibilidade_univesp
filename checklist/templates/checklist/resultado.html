@@ -1,0 +1,77 @@
+{% extends 'checklist/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+
+        <div class="card p-4 mb-4 text-center">
+            <h4 class="fw-bold mb-1" style="color: #003366;">Resultado da Avaliação</h4>
+            <p class="text-muted">{{ avaliacao.polo.nome }} — {{ avaliacao.polo.cidade }}</p>
+
+            <!-- Termômetro -->
+            <div class="my-4">
+                <h2 class="fw-bold text-{{ classificacao.1 }}">{{ score_geral }}%</h2>
+                <div class="progress mx-auto mb-2" style="height: 30px; max-width: 400px;">
+                    <div class="progress-bar bg-{{ classificacao.1 }}" 
+                         style="width: {{ score_geral }}%;">
+                    </div>
+                </div>
+                <span class="badge bg-{{ classificacao.1 }} fs-6 px-4 py-2">{{ classificacao.0 }}</span>
+            </div>
+
+            <div class="row text-center mt-2">
+                <div class="col">
+                    <small class="text-muted d-block">0–29%</small>
+                    <span class="badge bg-dark">Inadequado</span>
+                </div>
+                <div class="col">
+                    <small class="text-muted d-block">30–49%</small>
+                    <span class="badge bg-danger">Crítico</span>
+                </div>
+                <div class="col">
+                    <small class="text-muted d-block">50–69%</small>
+                    <span class="badge bg-warning text-dark">Regular</span>
+                </div>
+                <div class="col">
+                    <small class="text-muted d-block">70–89%</small>
+                    <span class="badge bg-primary">Bom</span>
+                </div>
+                <div class="col">
+                    <small class="text-muted d-block">90–100%</small>
+                    <span class="badge bg-success">Excelente</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultado por indicador -->
+        <div class="card p-4">
+            <h5 class="fw-bold mb-4" style="color: #003366;">Detalhamento por Indicador</h5>
+            {% for item in resultado_por_indicador %}
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="fw-bold">{{ item.indicador.numero }}. {{ item.indicador.nome }}</small>
+                    <small class="text-muted">{{ item.sim }}/{{ item.total }} — {{ item.score }}%</small>
+                </div>
+                <div class="progress" style="height: 18px;">
+                    <div class="progress-bar 
+                        {% if item.score >= 90 %}bg-success
+                        {% elif item.score >= 70 %}bg-primary
+                        {% elif item.score >= 50 %}bg-warning
+                        {% elif item.score >= 30 %}bg-danger
+                        {% else %}bg-dark{% endif %}"
+                        style="width: {{ item.score }}%;">
+                        {{ item.score }}%
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4 mb-5">
+            <a href="{% url 'selecionar_polo' %}" class="btn btn-outline-secondary me-2">Nova Avaliação</a>
+            <a href="{% url 'login' %}" class="btn btn-primary">Início</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
