@@ -1,2 +1,2 @@
-echo "gunicorn" >> requirements.txt
+gunicorn
 
